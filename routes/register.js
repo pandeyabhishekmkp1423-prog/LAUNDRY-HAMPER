@@ -1,83 +1,39 @@
-import React, { useState } from "react";
+// routes/register.js
+import express from "express";
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
 
-const Register = () => {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [message, setMessage] = useState("");
+const router = express.Router();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+// POST /api/register → register new user
+router.post("/", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-
-    try {
-      const res = await fetch("https://laundry-hamper-cx7b.vercel.app/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMessage("✅ " + data.message);
-      } else {
-        setMessage("❌ " + data.message);
-      }
-    } catch (err) {
-      setMessage("❌ Cannot connect to backend");
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
-  };
 
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-2xl shadow-lg w-96"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Register
-        </button>
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
-        {message && <p className="mt-3 text-center">{message}</p>}
-      </form>
-    </div>
-  );
-};
+// GET /api/register/all → get all users
+router.get("/all", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
-export default Register;
+export default router;
