@@ -1,75 +1,38 @@
-import React, { useState } from "react";
+// routes/login.js
+import express from "express";
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
 
-const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
+const router = express.Router();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+// POST /api/login
+router.post("/", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-
-    try {
-      const res = await fetch("https://laundry-hamper-cx7b.vercel.app/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMessage("✅ " + data.message);
-        localStorage.setItem("user", JSON.stringify(data.user)); // store logged-in user
-      } else {
-        setMessage("❌ " + data.message);
-      }
-    } catch (err) {
-      setMessage("❌ Cannot connect to backend");
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
-  };
 
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-2xl shadow-lg w-96"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
+    // Success → return user (excluding password)
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    };
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
-          Login
-        </button>
+    res.json({ message: "Login successful", user: userData });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
-        {message && <p className="mt-3 text-center">{message}</p>}
-      </form>
-    </div>
-  );
-};
-
-export default Login;
+export default router;
