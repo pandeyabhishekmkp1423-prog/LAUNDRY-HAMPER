@@ -6,7 +6,7 @@ import cors from "cors";
 
 // Routes
 import servicesRoutes from "./routes/services.js";
-import cartRoutes from "./routes/cart.js";
+import cartRoutes from "./routes/Cart.js";
 import ordersRoutes from "./routes/orders.js";
 import loginRoutes from "./routes/login.js";
 import registerRoutes from "./routes/register.js";
