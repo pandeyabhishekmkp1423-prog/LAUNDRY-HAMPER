@@ -1,12 +1,11 @@
-// index.js
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Routes
+// Routes (all lowercase)
 import servicesRoutes from "./routes/services.js";
-import cartRoutes from "./routes/Cart.js";
+import cartRoutes from "./routes/cart.js";
 import ordersRoutes from "./routes/orders.js";
 import loginRoutes from "./routes/login.js";
 import registerRoutes from "./routes/register.js";
