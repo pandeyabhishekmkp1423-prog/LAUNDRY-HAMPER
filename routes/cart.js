@@ -1,6 +1,6 @@
 // routes/cart.js
 import express from "express";
-import Cart from "../models/Cart.js"; // We'll create a Cart model
+import Cart from "../models/cart.js"; // We'll create a Cart model
 const router = express.Router();
 
 // Get cart by user
