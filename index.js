@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: "https://laundry-frontend.vercel.app", // replace with your frontend URL
+  origin: "https://my-frontend-eight.vercel.app", // removed trailing slash
   credentials: true
 }));
 app.use(express.json()); // Parse JSON requests
