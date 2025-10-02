@@ -15,12 +15,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Middleware
+// ✅ Flexible CORS middleware
 app.use(cors({
-  origin: [
-    "http://localhost:5173",               // local frontend
-    "https://my-frontend-eight.vercel.app" // deployed frontend
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like Postman) or any localhost port
+    if (!origin || origin.startsWith("http://localhost")) {
+      callback(null, true);
+    } 
+    // Allow deployed frontend
+    else if (origin === "https://my-frontend-eight.vercel.app") {
+      callback(null, true);
+    } 
+    else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
@@ -38,7 +47,7 @@ app.get("/", (req, res) => {
   res.send("✅ Welcome to Laundry Hamper Backend");
 });
 
-// ✅ Health check route
+// ✅ Health check
 app.get("/health", async (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1
     ? "✅ MongoDB connected"
