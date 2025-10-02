@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Routes (all lowercase)
+// Routes
 import servicesRoutes from "./routes/services.js";
 import cartRoutes from "./routes/cart.js";
 import ordersRoutes from "./routes/orders.js";
@@ -15,26 +15,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// ✅ Middleware
 app.use(cors({
-  origin: "https://my-frontend-eight.vercel.app", // removed trailing slash
+  origin: [
+    "http://localhost:5173",               // local frontend
+    "https://my-frontend-eight.vercel.app" // deployed frontend
+  ],
   credentials: true
 }));
+
 app.use(express.json()); // Parse JSON requests
 
-// API Routes
+// ✅ API Routes
 app.use("/api/services", servicesRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/login", loginRoutes);
 app.use("/api/register", registerRoutes);
 
-// Default route
+// ✅ Default route
 app.get("/", (req, res) => {
   res.send("✅ Welcome to Laundry Hamper Backend");
 });
 
-// Health check route
+// ✅ Health check route
 app.get("/health", async (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1
     ? "✅ MongoDB connected"
@@ -42,11 +46,11 @@ app.get("/health", async (req, res) => {
   res.send(`Backend is alive! | ${dbStatus}`);
 });
 
-// Connect to MongoDB and start server
+// ✅ Connect to MongoDB and start server
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
   })
   .then(() => {
     console.log("✅ MongoDB Connected");
